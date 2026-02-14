@@ -1,7 +1,9 @@
+import Header from "./_components/Header";
+
 export default function Home() {
   return (
     <div>
-      <h1>Hello to NEXT App</h1>
+      <Header/>
     </div>
   );
 }
