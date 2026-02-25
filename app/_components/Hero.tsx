@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Search } from "lucide-react";
 
@@ -7,7 +9,9 @@ const services = [
     icon: (
       <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
         <circle cx="24" cy="24" r="20" fill="#EDE9FE" />
-        <text x="24" y="30" textAnchor="middle" fontSize="20">🧹</text>
+        <text x="24" y="30" textAnchor="middle" fontSize="20">
+          🧹
+        </text>
       </svg>
     ),
   },
@@ -16,7 +20,9 @@ const services = [
     icon: (
       <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
         <circle cx="24" cy="24" r="20" fill="#EDE9FE" />
-        <text x="24" y="30" textAnchor="middle" fontSize="20">🔧</text>
+        <text x="24" y="30" textAnchor="middle" fontSize="20">
+          🔧
+        </text>
       </svg>
     ),
   },
@@ -25,7 +31,9 @@ const services = [
     icon: (
       <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
         <circle cx="24" cy="24" r="20" fill="#EDE9FE" />
-        <text x="24" y="30" textAnchor="middle" fontSize="20">🖌️</text>
+        <text x="24" y="30" textAnchor="middle" fontSize="20">
+          🖌️
+        </text>
       </svg>
     ),
   },
@@ -34,7 +42,9 @@ const services = [
     icon: (
       <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
         <circle cx="24" cy="24" r="20" fill="#EDE9FE" />
-        <text x="24" y="30" textAnchor="middle" fontSize="20">🚚</text>
+        <text x="24" y="30" textAnchor="middle" fontSize="20">
+          🚚
+        </text>
       </svg>
     ),
   },
@@ -43,7 +53,9 @@ const services = [
     icon: (
       <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
         <circle cx="24" cy="24" r="20" fill="#EDE9FE" />
-        <text x="24" y="30" textAnchor="middle" fontSize="20">🔩</text>
+        <text x="24" y="30" textAnchor="middle" fontSize="20">
+          🔩
+        </text>
       </svg>
     ),
   },
@@ -52,7 +64,9 @@ const services = [
     icon: (
       <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
         <circle cx="24" cy="24" r="20" fill="#EDE9FE" />
-        <text x="24" y="30" textAnchor="middle" fontSize="20">⚡</text>
+        <text x="24" y="30" textAnchor="middle" fontSize="20">
+          ⚡
+        </text>
       </svg>
     ),
   },
@@ -65,14 +79,12 @@ export default function HeroSection() {
     <section className="min-h-105 flex flex-col items-center justify-center bg-white px-4 py-16">
       {/* Heading */}
       <h1 className="text-4xl font-bold text-center text-gray-900 leading-tight mb-3">
-        Find Home{" "}
-        <span className="text-primary">Service/Repair</span>
+        Find Home <span className="text-primary">Service/Repair</span>
         <br />
         Near You
       </h1>
 
-      {/* Subtitle */}
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-gray-500 text-md mb-6">
         Explore Best Home Service &amp; Repair near you
       </p>
 
