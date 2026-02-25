@@ -10,7 +10,7 @@ const businesses = [
     category: "Cleaning",
     categoryColor: "bg-purple-100 text-purple-600",
     image:
-      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=220&fit=crop&crop=top",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=400&h=220&fit=crop&crop=top",
     bgColor: "#FFF3E0",
   },
   {
@@ -21,7 +21,7 @@ const businesses = [
     category: "Cleaning",
     categoryColor: "bg-purple-100 text-purple-600",
     image:
-      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=400&h=220&fit=crop&crop=top",
+      "https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2FzaGluZyUyMG1hY2hpbmV8ZW58MHx8MHx8fDA%3D",
     bgColor: "#FCE4EC",
   },
   {
@@ -43,7 +43,7 @@ const businesses = [
     category: "Cleaning",
     categoryColor: "bg-purple-100 text-purple-600",
     image:
-      "https://images.unsplash.com/photo-1527515545081-5db817172677?w=400&h=220&fit=crop&crop=top",
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmF0aHJvb218ZW58MHx8MHx8fDA%3D",
     bgColor: "#F3E5F5",
   },
   {
@@ -54,7 +54,7 @@ const businesses = [
     category: "Cleaning",
     categoryColor: "bg-purple-100 text-purple-600",
     image:
-      "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&h=220&fit=crop&crop=top",
+      "https://images.unsplash.com/photo-1718152421680-d1580e843cc9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzV8fGNsZWFuaW5nfGVufDB8fDB8fHww",
     bgColor: "#E8F5E9",
   },
   {
@@ -65,7 +65,7 @@ const businesses = [
     category: "Cleaning",
     categoryColor: "bg-purple-100 text-purple-600",
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=220&fit=crop&crop=top",
+      "https://images.unsplash.com/photo-1603712725038-e9334ae8f39f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y2xlYW5pbmclMjBzZXJ2aWNlfGVufDB8fDB8fHww",
     bgColor: "#FFF8E1",
   },
   {
@@ -76,7 +76,7 @@ const businesses = [
     category: "Cleaning",
     categoryColor: "bg-purple-100 text-purple-600",
     image:
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=220&fit=crop&crop=top",
+      "https://images.unsplash.com/photo-1642755623141-23b3cb4284aa?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzZ8fGJhdGhyb29tfGVufDB8fDB8fHww",
     bgColor: "#E0F7FA",
   },
 ];
