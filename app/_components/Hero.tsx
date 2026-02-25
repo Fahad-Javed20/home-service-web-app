@@ -62,8 +62,8 @@ export default function HeroSection() {
             className="flex flex-col items-center justify-center gap-2 rounded-2xl cursor-pointer group hover:shadow-md hover:scale-105 transition-all duration-200"
             style={{
               backgroundColor: "#EDE9FE",
-              width: 108,
-              height: 90,
+              width: 150,
+              height: 110,
             }}
           >
             <span style={{ color: service.color }} className="group-hover:scale-110 transition-transform duration-200">
