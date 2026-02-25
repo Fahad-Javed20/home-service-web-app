@@ -35,7 +35,7 @@ export default function Newsletter() {
             />
             <button
               onClick={handleSubmit}
-              className="bg-primary hover:bg-purple-600 text-white text-[13px] font-semibold px-5 py-2.5 rounded-full m-[3px] transition-colors"
+              className="bg-primary hover:bg-purple-600 text-white text-[13px] font-semibold px-5 py-2.5 rounded-full m-0.75 transition-colors"
             >
               Subscribe
             </button>

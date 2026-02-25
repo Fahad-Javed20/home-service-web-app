@@ -5,7 +5,6 @@ import StatsBanner from "./_components/StatusBanner";
 import WhyChooseUs from "./_components/WhyChooseUs";
 import NewsLetter from "./_components/NewsLetter";
 import Testimonials from "./_components/Testimonials";
-import Footer from "./_components/Footer";
 
 export default function Home() {
   return (
