@@ -1,3 +1,4 @@
+'use client';
 import { useState } from "react";
 import { Search } from "lucide-react";
 import {
@@ -27,7 +28,7 @@ export default function HeroSection() {
     <section className="flex flex-col items-center justify-center bg-white px-6 py-14">
 
       {/* ── Heading ── */}
-      <h1 className="text-[2.6rem] font-extrabold text-center text-gray-900 leading-tight mb-2">
+      <h1 className="text-[2.6rem] font-bold text-center text-gray-900 leading-tight mb-2">
         Find Home{" "}
         <span className="text-primary">Service/Repair</span>
         <br />
