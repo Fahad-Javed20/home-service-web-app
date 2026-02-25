@@ -62,7 +62,7 @@ export default function HeroSection() {
   const [query, setQuery] = useState("");
 
   return (
-    <section className="min-h-[420px] flex flex-col items-center justify-center bg-white px-4 py-16">
+    <section className="min-h-105 flex flex-col items-center justify-center bg-white px-4 py-16">
       {/* Heading */}
       <h1 className="text-4xl font-bold text-center text-gray-900 leading-tight mb-3">
         Find Home{" "}
