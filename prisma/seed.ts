@@ -1,53 +1,64 @@
+// prisma/seed.ts
 import { PrismaClient, UserRole } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-// PrismaPg requires a pg Pool instance, not a plain config object
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+import { PrismaPg } from "@prisma/adapter-pg";
+// adapter will pick up DATABASE_URL from env
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(),
 });
-
-const adapter = new PrismaPg(pool);
-
-const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding database...");
 
-  const categoriesData = [
-    { name: "Cleaning", icon: "🧹" },
-    { name: "Repair", icon: "🔧" },
-    { name: "Painting", icon: "🎨" },
-    { name: "Shifting", icon: "🚚" },
-    { name: "Plumbing", icon: "🚰" },
-    { name: "Electric", icon: "💡" },
+  // services list derived from Hero component
+  const serviceList = [
+    { label: "Cleaning", icon: "🧹" },
+    { label: "Repair", icon: "🔧" },
+    { label: "Painting", icon: "🎨" },
+    { label: "Shifting", icon: "🚚" },
+    { label: "Plumbing", icon: "🚰" },
+    { label: "Electric", icon: "💡" },
   ];
 
-  const categories = [];
-  for (const cat of categoriesData) {
-    const c = await prisma.category.create({ data: cat });
-    categories.push(c);
+  // create or upsert categories
+  const categories: Array<any> = [];
+  for (const svc of serviceList) {
+    const cat = await prisma.category.upsert({
+      where: { name: svc.label },
+      update: {},
+      create: {
+        name: svc.label,
+        icon: svc.icon,
+        description: `${svc.label} related jobs`,
+      },
+    });
+    categories.push(cat);
   }
 
-  const services = [];
+  // create one service per category
+  const services: Array<any> = [];
   for (const cat of categories) {
-    const service = await prisma.service.create({
-      data: {
+    const svc = await prisma.service.upsert({
+      where: { name: `${cat.name} Service` },
+      update: {},
+      create: {
         name: `${cat.name} Service`,
-        description: `Professional ${cat.name.toLowerCase()} service`,
+        description: `Professional ${cat.name.toLowerCase()} work`,
         basePrice: Math.floor(Math.random() * 100) + 50,
         categoryId: cat.id,
       },
     });
-    services.push(service);
+    services.push(svc);
   }
 
+  // create some customers
   for (let i = 1; i <= 30; i++) {
-    await prisma.user.create({
-      data: {
+    await prisma.user.upsert({
+      where: { email: `customer${i}@example.com` },
+      update: {},
+      create: {
         name: `Customer ${i}`,
         email: `customer${i}@example.com`,
         role: UserRole.CUSTOMER,
@@ -55,31 +66,37 @@ async function main() {
     });
   }
 
-  for (let i = 1; i <= 60; i++) {
-    const categoryIndex = Math.floor((i - 1) / 10);
-    const service = services[categoryIndex];
+  // create providers: 10 per service
+  let providerCount = 1;
+  for (const svc of services) {
+    for (let j = 0; j < 10; j++) {
+      const user = await prisma.user.upsert({
+        where: { email: `provider${providerCount}@example.com` },
+        update: {},
+        create: {
+          name: `Provider ${providerCount}`,
+          email: `provider${providerCount}@example.com`,
+          role: UserRole.SERVICE_PROVIDER,
+        },
+      });
 
-    const user = await prisma.user.create({
-      data: {
-        name: `Provider ${i}`,
-        email: `provider${i}@example.com`,
-        role: UserRole.SERVICE_PROVIDER,
-      },
-    });
-    // i created image field in service provider model and i am adding random image from unsplash for each provider
+      await prisma.serviceProvider.upsert({
+        where: { userId: user.id },
+        update: {},
+        create: {
+          userId: user.id,
+          serviceId: svc.id,
+          bio: `Experienced ${svc.name.toLowerCase()}`,
+          imageURL: `https://source.unsplash.com/200x200/?${svc.name.toLowerCase()}&sig=${j}`,
+          verified: Math.random() < 0.8,
+          rating: Math.floor(Math.random() * 5) + 1,
+          totalReviews: Math.floor(Math.random() * 50),
+          yearsOfExperience: Math.floor(Math.random() * 10) + 1,
+        },
+      });
 
-    await prisma.serviceProvider.create({
-      data: {
-        userId: user.id,
-        serviceId: service.id,
-        imageURL: `https://picsum.photos/200/200?random=${i}`,
-        bio: `I am an experienced ${service.name.toLowerCase()}`,
-        verified: Math.random() < 0.8,
-        rating: Math.floor(Math.random() * 5) + 1,
-        totalReviews: Math.floor(Math.random() * 50),
-        yearsOfExperience: Math.floor(Math.random() * 10) + 1,
-      },
-    });
+      providerCount++;
+    }
   }
 
   console.log("Seeding completed!");
