@@ -35,6 +35,7 @@ model ServiceProvider {
   userId            String   @unique
   serviceId         String // only one service
   bio               String?
+  imageURL          String?
   verified          Boolean  @default(false)
   rating            Float    @default(0)
   totalReviews      Int      @default(0)

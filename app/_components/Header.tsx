@@ -28,7 +28,7 @@ export default function Header() {
                 Home
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
               </Link>
-              <Link href="/services" className="text-gray-700 hover:text-primary font-medium transition-colors duration-200 relative group">
+              <Link href="/serviceproviders" className="text-gray-700 hover:text-primary font-medium transition-colors duration-200 relative group">
                 Services
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
               </Link>
@@ -36,7 +36,7 @@ export default function Header() {
                 About Us
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
               </Link>
-              <Link href="/" className="text-gray-700 hover:text-primary font-medium transition-colors duration-200 relative group">
+              <Link href="/contact" className="text-gray-700 hover:text-primary font-medium transition-colors duration-200 relative group">
                 Contact Us
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
               </Link>
@@ -45,7 +45,7 @@ export default function Header() {
 
           <Link href="/get-started">
             <Button className="bg-primary hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200">
-              Get Started
+              Login/Signup
             </Button>
           </Link>
         </div>
