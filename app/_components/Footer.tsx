@@ -16,11 +16,11 @@ export default function Footer() {
           {/* Brand col */}
           <div className="lg:w-1/6 md:w-1/2 w-full px-4 mb-10">
             <div className="flex items-center gap-2 mb-4 md:justify-start justify-center">
-              <div className="relative w-10 h-10 bg-linear-to-br from-primary to-purple-700 rounded-lg flex items-center justify-center shadow-md">
+              {/* <div className="relative w-10 h-10 bg-linear-to-br from-primary to-purple-700 rounded-lg flex items-center justify-center shadow-md">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                 </svg>
-              </div>
+              </div> */}
               {/* <div className="bg-primary w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-white font-extrabold text-xs">HS</span>
               </div> */}
@@ -181,7 +181,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
+      Bottom Bar
       <div className="bg-gray-50 border-t border-gray-200">
         <div className="container mx-auto py-5 px-5 flex flex-wrap flex-col sm:flex-row items-center">
           <p className="text-gray-500 text-sm text-center sm:text-left">
