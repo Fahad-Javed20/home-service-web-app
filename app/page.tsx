@@ -5,16 +5,29 @@ import StatsBanner from "./_components/StatusBanner";
 import WhyChooseUs from "./_components/WhyChooseUs";
 import NewsLetter from "./_components/NewsLetter";
 import Testimonials from "./_components/Testimonials";
+import {
+  getHeroCategories,
+  getPopularProviders,
+  getStats,
+  getTestimonials,
+} from "@/lib/data/home";
 
-export default function Home() {
+export default async function Home() {
+  const [categories, popularProviders, testimonials, stats] = await Promise.all([
+    getHeroCategories(),
+    getPopularProviders(),
+    getTestimonials(),
+    getStats(),
+  ]);
+
   return (
     <div>
-      <HeroSection />
-      <PopularBusiness />
+      <HeroSection categories={categories} />
+      <PopularBusiness providers={popularProviders} />
       <HowItWorks />
       <WhyChooseUs />
-      <StatsBanner />
-      <Testimonials />
+      <StatsBanner stats={stats} />
+      <Testimonials testimonials={testimonials} />
       <NewsLetter />
     </div>
   );
