@@ -1,8 +1,14 @@
-import { BookingStatus } from "@prisma/client";
+import { BookingStatus, UserRole } from "@prisma/client";
 import Link from "next/link";
-import { requireAuthUser } from "@/lib/server/auth";
-import { listBookingsForUser } from "@/lib/services/booking-service";
-import { cancelBookingAction, deleteBookingAction } from "./actions";
+import { redirect } from "next/navigation";
+import { requireAuthUser } from "@/backend/auth/session";
+import { getDashboardPathByRole } from "@/backend/auth/role-routes";
+import { listBookingsForUser } from "@/backend/services/booking-service";
+import {
+  cancelBookingAction,
+  deleteBookingAction,
+} from "@/backend/actions/account-bookings";
+import { createReviewAction } from "@/backend/actions/reviews";
 
 type MyAccountPageProps = {
   searchParams: Promise<{
@@ -40,6 +46,8 @@ function getStatusMessage(status: string | undefined) {
       return "Booking cancelled successfully.";
     case "booking-deleted":
       return "Booking deleted successfully.";
+    case "review-created":
+      return "Thank you. Your review has been submitted.";
     default:
       return "";
   }
@@ -47,6 +55,11 @@ function getStatusMessage(status: string | undefined) {
 
 export default async function MyAccountPage({ searchParams }: MyAccountPageProps) {
   const [params, user] = await Promise.all([searchParams, requireAuthUser("/my-account")]);
+
+  if (user.role !== UserRole.USER) {
+    redirect(getDashboardPathByRole(user.role));
+  }
+
   const bookings = await listBookingsForUser(user.id);
   const statusMessage = getStatusMessage(params.status);
 
@@ -100,10 +113,11 @@ export default async function MyAccountPage({ searchParams }: MyAccountPageProps
                   </p>
                   <p className="mt-1 text-sm text-gray-500">{booking.location}</p>
                   <p className="mt-2 text-sm font-medium text-gray-700">
-                    Date: {formatDateLabel(booking.scheduledDate)}
+                    Date: {formatDateLabel(booking.bookingDate)}
                   </p>
+                  <p className="mt-1 text-sm font-medium text-gray-700">Time: {booking.timeSlot}</p>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                    {booking.status}
+                    {booking.status} • {booking.paymentStatus}
                   </p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -129,6 +143,42 @@ export default async function MyAccountPage({ searchParams }: MyAccountPageProps
                           Delete Booking
                         </button>
                       </form>
+                    ) : null}
+
+                    {booking.status === BookingStatus.COMPLETED && !booking.hasReview ? (
+                      <details>
+                        <summary className="cursor-pointer rounded-lg border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100">
+                          Add Review
+                        </summary>
+                        <form
+                          action={createReviewAction}
+                          className="mt-2 grid min-w-[280px] gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3"
+                        >
+                          <input type="hidden" name="bookingId" value={booking.id} />
+                          <select
+                            name="rating"
+                            defaultValue="5"
+                            className="rounded-md border border-blue-200 px-2 py-1.5 text-xs outline-none focus:border-primary"
+                          >
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3">3 - Average</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="1">1 - Bad</option>
+                          </select>
+                          <textarea
+                            name="comment"
+                            placeholder="Share your experience (optional)"
+                            className="min-h-16 rounded-md border border-blue-200 px-2 py-1.5 text-xs outline-none focus:border-primary"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+                          >
+                            Submit Review
+                          </button>
+                        </form>
+                      </details>
                     ) : null}
                   </div>
                 </article>

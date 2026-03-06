@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { MapPin, Star } from "lucide-react";
-import type { ServiceProviderCard } from "@/lib/data/providers";
+import type { ServiceProviderCard } from "@/backend/queries/providers";
 import BookNowButton from "@/app/_components/BookNowButton";
 
 type PopularBusinessProps = {

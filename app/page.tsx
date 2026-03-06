@@ -10,7 +10,7 @@ import {
   getPopularProviders,
   getStats,
   getTestimonials,
-} from "@/lib/data/home";
+} from "@/backend/queries/home";
 
 export default async function Home() {
   const [categories, popularProviders, testimonials, stats] = await Promise.all([

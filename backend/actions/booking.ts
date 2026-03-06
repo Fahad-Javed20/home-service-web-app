@@ -2,20 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createBookingForUser } from "@/lib/services/booking-service";
-import { requireAuthUser } from "@/lib/server/auth";
-
-function sanitizeRedirectPath(path: string | null | undefined) {
-  if (!path) {
-    return "/";
-  }
-
-  if (!path.startsWith("/") || path.startsWith("//")) {
-    return "/";
-  }
-
-  return path;
-}
+import { createBookingForUser } from "@/backend/services/booking-service";
+import { requireAuthUser } from "@/backend/auth/session";
+import { normalizeRedirectPath } from "@/backend/auth/role-routes";
 
 function redirectWithMessage(payload: {
   redirectPath: string;
@@ -31,7 +20,7 @@ function redirectWithMessage(payload: {
     params.set("error", payload.error);
   }
 
-  const targetPath = sanitizeRedirectPath(payload.redirectPath);
+  const targetPath = normalizeRedirectPath(payload.redirectPath);
   const query = params.toString();
   const target = query ? `${targetPath}?${query}` : targetPath;
   redirect(target);
@@ -39,8 +28,9 @@ function redirectWithMessage(payload: {
 
 export async function createBookingAction(formData: FormData) {
   const providerId = String(formData.get("providerId") ?? "").trim();
-  const scheduledDateInput = String(formData.get("scheduledDate") ?? "").trim();
-  const redirectPath = sanitizeRedirectPath(
+  const bookingDateInput = String(formData.get("bookingDate") ?? "").trim();
+  const timeSlot = String(formData.get("timeSlot") ?? "").trim();
+  const redirectPath = normalizeRedirectPath(
     String(formData.get("redirectPath") ?? "")
   );
 
@@ -51,20 +41,28 @@ export async function createBookingAction(formData: FormData) {
     });
   }
 
-  if (!scheduledDateInput) {
+  if (!bookingDateInput) {
     redirectWithMessage({
       redirectPath,
       error: "Please choose an appointment date.",
     });
   }
 
+  if (!timeSlot) {
+    redirectWithMessage({
+      redirectPath,
+      error: "Please choose a time slot.",
+    });
+  }
+
   const user = await requireAuthUser(redirectPath);
-  const scheduledDate = new Date(`${scheduledDateInput}T10:00:00`);
+  const bookingDate = new Date(`${bookingDateInput}T00:00:00`);
 
   const result = await createBookingForUser({
     userId: user.id,
     providerId,
-    scheduledDate,
+    bookingDate,
+    timeSlot,
   });
 
   if (!result.ok) {
@@ -75,6 +73,7 @@ export async function createBookingAction(formData: FormData) {
   }
 
   revalidatePath("/my-account");
+  revalidatePath("/dashboard");
   revalidatePath("/serviceproviders");
   revalidatePath(redirectPath);
 

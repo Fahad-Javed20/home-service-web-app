@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Briefcase, MapPin, ShieldCheck, Star } from "lucide-react";
-import { getServiceProviders } from "@/lib/data/providers";
-import { getHeroCategories } from "@/lib/data/home";
+import { getServiceProviders } from "@/backend/queries/providers";
+import { getHeroCategories } from "@/backend/queries/home";
 import BookNowButton from "@/app/_components/BookNowButton";
 
 type ServicesPageProps = {
   searchParams: Promise<{
     category?: string;
+    q?: string;
   }>;
 };
 
@@ -19,8 +20,10 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
     (category) => category.id === params.category
   );
   const activeCategoryId = isValidCategory ? params.category : undefined;
+  const query = params.q?.trim() ?? "";
   const providers = await getServiceProviders({
     categoryId: activeCategoryId,
+    query,
   });
 
   const activeCategoryName =
@@ -36,6 +39,22 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
         <p className="text-gray-500 mt-2 text-sm">
           Browse verified professionals and book trusted help near you.
         </p>
+        <form action="/serviceproviders" className="mt-4 flex flex-wrap gap-2">
+          {activeCategoryId ? <input type="hidden" name="category" value={activeCategoryId} /> : null}
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            placeholder="Search provider, city, or service"
+            className="w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700"
+          >
+            Search
+          </button>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
@@ -77,6 +96,12 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             <p className="text-sm text-gray-500">
               Showing providers for{" "}
               <span className="font-semibold text-gray-800">{activeCategoryName}</span>
+              {query ? (
+                <>
+                  {" "}
+                  matching <span className="font-semibold text-gray-800">&quot;{query}&quot;</span>
+                </>
+              ) : null}
             </p>
             <p className="text-sm text-gray-400">{providers.length} results</p>
           </div>

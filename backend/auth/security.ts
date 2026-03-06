@@ -1,4 +1,4 @@
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
 const SCRYPT_KEY_LENGTH = 64;
 
@@ -25,12 +25,4 @@ export function verifyPasswordHash(password: string, storedHash: string) {
   }
 
   return timingSafeEqual(originalBuffer, derivedBuffer);
-}
-
-export function createSessionToken() {
-  return randomBytes(32).toString("hex");
-}
-
-export function createTokenHash(token: string) {
-  return createHash("sha256").update(token).digest("hex");
 }

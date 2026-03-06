@@ -1,5 +1,5 @@
 import { CheckCircle, MapPin, Star, Users } from "lucide-react";
-import type { HomeStats } from "@/lib/data/home";
+import type { HomeStats } from "@/backend/queries/home";
 
 type StatsBannerProps = {
   stats: HomeStats;

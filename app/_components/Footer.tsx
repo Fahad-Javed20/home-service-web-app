@@ -22,7 +22,8 @@ const companyLinks = [
 
 const supportLinks = [
   { label: "Contact Us", href: "/contact" },
-  { label: "My Account", href: "/my-account" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "My Bookings", href: "/my-account" },
   { label: "Login / Signup", href: "/auth?mode=signin" },
 ];
 

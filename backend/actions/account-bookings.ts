@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 import {
   cancelBookingForUser,
   deleteBookingForUser,
-} from "@/lib/services/booking-service";
-import { requireAuthUser } from "@/lib/server/auth";
+} from "@/backend/services/booking-service";
+import { requireAuthUser } from "@/backend/auth/session";
 
 function redirectWithMessage(payload: { status?: string; error?: string }) {
   const params = new URLSearchParams();
@@ -42,6 +42,7 @@ export async function cancelBookingAction(formData: FormData) {
   }
 
   revalidatePath("/my-account");
+  revalidatePath("/dashboard");
   redirectWithMessage({ status: "booking-cancelled" });
 }
 
@@ -63,5 +64,6 @@ export async function deleteBookingAction(formData: FormData) {
   }
 
   revalidatePath("/my-account");
+  revalidatePath("/dashboard");
   redirectWithMessage({ status: "booking-deleted" });
 }

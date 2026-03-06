@@ -6,131 +6,235 @@ datasource db {
   provider = "postgresql"
 }
 
-model Category {
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  emailVerified   DateTime?
+  passwordHash    String?
+  phone           String?
+  profileImage    String?
+  role            UserRole @default(USER)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  adminProfile    Admin?
+  providerProfile ServiceProvider?
+  bookings        Booking[]        @relation("CustomerBookings")
+  reviews         Review[]         @relation("CustomerReviews")
+  accounts        Account[]
+  sessions        Session[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  userId        String
+  providerId    String
+  serviceId     String
+  bookingDate   DateTime
+  timeSlot      String
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  completedAt   DateTime?
+  customer      User            @relation("CustomerBookings", fields: [userId], references: [id], onDelete: Cascade)
+  provider      ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  service       Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  review        Review?
+
+  @@unique([providerId, bookingDate, timeSlot])
+  @@unique([userId, providerId, bookingDate, timeSlot])
+  @@index([userId, createdAt])
+  @@index([providerId, bookingDate])
+  @@index([status])
+  @@map("bookings")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique
+  userId     String
+  providerId String
+  serviceId  String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  booking    Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer   User            @relation("CustomerReviews", fields: [userId], references: [id], onDelete: Cascade)
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  service    Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, createdAt])
+  @@index([serviceId, createdAt])
+  @@map("reviews")
+}
+
+model Admin {
+  id          String   @id @default(cuid())
+  userId       String   @unique
+  permissions  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+model ServiceCategory {
   id          String    @id @default(cuid())
   name        String    @unique
+  slug        String    @unique
   description String?
   icon        String?
-  services    Service[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  services    Service[]
+
+  @@map("service_categories")
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  basePrice   Float
-  categoryId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  description      String?
+  basePrice        Float
+  durationMinutes  Int               @default(120)
+  isActive         Boolean           @default(true)
+  categoryId       String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  category         ServiceCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  providerServices ProviderService[]
+  bookings         Booking[]
+  reviews          Review[]
 
-  category  Category          @relation(fields: [categoryId], references: [id])
-  providers ServiceProvider[]
-  bookings  Booking[]
-
+  @@unique([name, categoryId])
   @@index([categoryId])
+  @@map("services")
 }
 
 model ServiceProvider {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  serviceId         String // only one service
+  id                String                 @id @default(cuid())
+  userId            String                 @unique
+  businessName      String?
   bio               String?
   imageUrl          String?
   addressLine1      String?
   city              String?
   state             String?
-  country           String?  @default("USA")
-  verified          Boolean  @default(false)
-  rating            Float    @default(0)
-  totalReviews      Int      @default(0)
+  country           String?                @default("USA")
+  postalCode        String?
   yearsOfExperience Int?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  approvalStatus    ProviderApprovalStatus @default(PENDING)
+  isFeatured        Boolean                @default(false)
+  rating            Float                  @default(0)
+  totalReviews      Int                    @default(0)
+  jobsCompleted     Int                    @default(0)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerServices  ProviderService[]
+  availabilitySlots AvailabilitySlot[]
+  bookings          Booking[]
+  reviews           Review[]
 
-  user     User      @relation(fields: [userId], references: [id])
-  service  Service   @relation(fields: [serviceId], references: [id])
-  bookings Booking[]
-  reviews  Review[]
-
-  @@index([verified, rating, totalReviews])
-  @@index([serviceId])
-  @@index([city])
+  @@index([approvalStatus, rating, totalReviews])
+  @@index([city, state])
+  @@map("service_providers")
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?
-  name         String
-  phone        String?
-  profileImage String?
-  role         UserRole @default(CUSTOMER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model ProviderService {
+  id         String   @id @default(cuid())
+  providerId String
+  serviceId  String
+  isPrimary  Boolean  @default(false)
+  customPrice Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  service    Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
-  bookings        Booking[]
-  reviews         Review[]
-  serviceProvider ServiceProvider?
-  sessions        Session[]
+  @@unique([providerId, serviceId])
+  @@index([serviceId])
+  @@index([providerId, isPrimary])
+  @@map("provider_services")
+}
+
+model AvailabilitySlot {
+  id          String   @id @default(cuid())
+  providerId  String
+  dayOfWeek   Weekday
+  timeSlot    String
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, dayOfWeek, timeSlot])
+  @@index([providerId, dayOfWeek])
+  @@map("availability_slots")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_accounts")
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([expiresAt])
+  @@map("auth_sessions")
 }
 
-model Booking {
-  id                String        @id @default(cuid())
-  customerId        String
-  serviceProviderId String
-  serviceId         String
-  scheduledDate     DateTime
-  status            BookingStatus @default(PENDING)
-  notes             String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  completedAt       DateTime?
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
 
-  customer        User            @relation(fields: [customerId], references: [id])
-  serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id])
-  service         Service         @relation(fields: [serviceId], references: [id])
-  review          Review?
-
-  @@index([status])
-  @@index([scheduledDate])
-}
-
-model Review {
-  id                String   @id @default(cuid())
-  bookingId         String   @unique
-  customerId        String
-  serviceProviderId String
-  rating            Int
-  comment           String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  booking         Booking         @relation(fields: [bookingId], references: [id])
-  customer        User            @relation(fields: [customerId], references: [id])
-  serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id])
-
-  @@index([createdAt])
+  @@unique([identifier, token])
+  @@map("auth_verification_tokens")
 }
 
 enum UserRole {
   ADMIN
+  USER
   SERVICE_PROVIDER
-  CUSTOMER
+}
+
+enum ProviderApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }
 
 enum BookingStatus {
@@ -139,4 +243,22 @@ enum BookingStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum Weekday {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
 }

@@ -2,14 +2,16 @@ import Link from "next/link";
 import {
   listServiceCategories,
   listServicesForAdmin,
-} from "@/lib/services/service-admin";
-import { listProvidersForAdmin } from "@/lib/services/provider-admin";
+} from "@/backend/services/service-admin";
+import { listProvidersForAdmin } from "@/backend/services/provider-admin";
+import { listUsersForAdmin } from "@/backend/services/user-admin";
 
 export default async function AdminOverviewPage() {
-  const [categories, services, providers] = await Promise.all([
+  const [categories, services, providers, users] = await Promise.all([
     listServiceCategories(),
     listServicesForAdmin(),
     listProvidersForAdmin(),
+    listUsersForAdmin(),
   ]);
 
   return (
@@ -19,7 +21,11 @@ export default async function AdminOverviewPage() {
         Use the admin modules below to maintain services and service providers.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
+        <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <p className="text-sm text-gray-500">Users</p>
+          <p className="mt-1 text-3xl font-bold text-gray-900">{users.length}</p>
+        </article>
         <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-gray-500">Categories</p>
           <p className="mt-1 text-3xl font-bold text-gray-900">{categories.length}</p>
@@ -35,6 +41,26 @@ export default async function AdminOverviewPage() {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <Link
+          href="/admin/users"
+          className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:border-primary transition-colors"
+        >
+          <h2 className="text-lg font-bold text-gray-900">Users CRUD</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Update role and account status or safely remove users.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/categories"
+          className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:border-primary transition-colors"
+        >
+          <h2 className="text-lg font-bold text-gray-900">Categories CRUD</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Create and maintain service categories used across the marketplace.
+          </p>
+        </Link>
+
         <Link
           href="/admin/services"
           className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:border-primary transition-colors"

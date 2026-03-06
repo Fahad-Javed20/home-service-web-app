@@ -11,11 +11,11 @@ import {
   createProviderAction,
   deleteProviderAction,
   updateProviderAction,
-} from "./actions";
+} from "@/backend/actions/admin-providers";
 import {
   listProvidersForAdmin,
   listServicesForProviderForm,
-} from "@/lib/services/provider-admin";
+} from "@/backend/services/provider-admin";
 
 type AdminProvidersPageProps = {
   searchParams: Promise<{

@@ -1,5 +1,5 @@
-import { UserRole } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { ProviderApprovalStatus, UserRole } from "@prisma/client";
+import { prisma } from "@/backend/db/prisma";
 
 export type ProviderAdminRow = {
   id: string;
@@ -127,6 +127,9 @@ function validateProviderInput(input: ProviderCreateInput): ProviderMutationResu
 
 export async function listServicesForProviderForm(): Promise<ProviderServiceOption[]> {
   const services = await prisma.service.findMany({
+    where: {
+      isActive: true,
+    },
     orderBy: [{ name: "asc" }],
     include: {
       category: {
@@ -157,13 +160,18 @@ export async function listProvidersForAdmin(): Promise<ProviderAdminRow[]> {
           profileImage: true,
         },
       },
-      service: {
-        select: {
-          id: true,
-          name: true,
-          category: {
+      providerServices: {
+        orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+        include: {
+          service: {
             select: {
+              id: true,
               name: true,
+              category: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -177,30 +185,40 @@ export async function listProvidersForAdmin(): Promise<ProviderAdminRow[]> {
     },
   });
 
-  return providers.map((provider) => ({
-    id: provider.id,
-    userId: provider.user.id,
-    userName: provider.user.name,
-    userEmail: provider.user.email,
-    phone: provider.user.phone,
-    profileImage: provider.user.profileImage,
-    serviceId: provider.service.id,
-    serviceName: provider.service.name,
-    categoryName: provider.service.category.name,
-    bio: provider.bio,
-    imageUrl: provider.imageUrl,
-    addressLine1: provider.addressLine1,
-    city: provider.city,
-    state: provider.state,
-    country: provider.country,
-    yearsOfExperience: provider.yearsOfExperience,
-    verified: provider.verified,
-    rating: provider.rating,
-    totalReviews: provider.totalReviews,
-    bookingsCount: provider._count.bookings,
-    reviewsCount: provider._count.reviews,
-    updatedAt: provider.updatedAt,
-  }));
+  return providers
+    .map((provider) => {
+      const primaryService = provider.providerServices[0]?.service;
+
+      if (!primaryService) {
+        return null;
+      }
+
+      return {
+        id: provider.id,
+        userId: provider.user.id,
+        userName: provider.user.name,
+        userEmail: provider.user.email,
+        phone: provider.user.phone,
+        profileImage: provider.user.profileImage,
+        serviceId: primaryService.id,
+        serviceName: primaryService.name,
+        categoryName: primaryService.category.name,
+        bio: provider.bio,
+        imageUrl: provider.imageUrl,
+        addressLine1: provider.addressLine1,
+        city: provider.city,
+        state: provider.state,
+        country: provider.country,
+        yearsOfExperience: provider.yearsOfExperience,
+        verified: provider.approvalStatus === ProviderApprovalStatus.APPROVED,
+        rating: provider.rating,
+        totalReviews: provider.totalReviews,
+        bookingsCount: provider._count.bookings,
+        reviewsCount: provider._count.reviews,
+        updatedAt: provider.updatedAt,
+      };
+    })
+    .filter((provider): provider is ProviderAdminRow => Boolean(provider));
 }
 
 export async function createProvider(
@@ -252,10 +270,9 @@ export async function createProvider(
       },
     });
 
-    await tx.serviceProvider.create({
+    const provider = await tx.serviceProvider.create({
       data: {
         userId: user.id,
-        serviceId,
         bio: normalizeOptional(input.bio),
         imageUrl: normalizeOptional(input.imageUrl),
         addressLine1: normalizeOptional(input.addressLine1),
@@ -263,7 +280,17 @@ export async function createProvider(
         state: normalizeOptional(input.state),
         country: normalizeOptional(input.country) ?? "USA",
         yearsOfExperience: input.yearsOfExperience,
-        verified: input.verified,
+        approvalStatus: input.verified
+          ? ProviderApprovalStatus.APPROVED
+          : ProviderApprovalStatus.PENDING,
+      },
+    });
+
+    await tx.providerService.create({
+      data: {
+        providerId: provider.id,
+        serviceId,
+        isPrimary: true,
       },
     });
   });
@@ -356,7 +383,6 @@ export async function updateProvider(
         id: providerId,
       },
       data: {
-        serviceId,
         bio: normalizeOptional(input.bio),
         imageUrl: normalizeOptional(input.imageUrl),
         addressLine1: normalizeOptional(input.addressLine1),
@@ -364,7 +390,23 @@ export async function updateProvider(
         state: normalizeOptional(input.state),
         country: normalizeOptional(input.country) ?? "USA",
         yearsOfExperience: input.yearsOfExperience,
-        verified: input.verified,
+        approvalStatus: input.verified
+          ? ProviderApprovalStatus.APPROVED
+          : ProviderApprovalStatus.PENDING,
+      },
+    });
+
+    await tx.providerService.deleteMany({
+      where: {
+        providerId,
+      },
+    });
+
+    await tx.providerService.create({
+      data: {
+        providerId,
+        serviceId,
+        isPrimary: true,
       },
     });
   });
@@ -413,6 +455,18 @@ export async function deleteProvider(providerId: string): Promise<ProviderMutati
   }
 
   await prisma.$transaction(async (tx) => {
+    await tx.availabilitySlot.deleteMany({
+      where: {
+        providerId: id,
+      },
+    });
+
+    await tx.providerService.deleteMany({
+      where: {
+        providerId: id,
+      },
+    });
+
     await tx.serviceProvider.delete({
       where: {
         id,
@@ -429,12 +483,20 @@ export async function deleteProvider(providerId: string): Promise<ProviderMutati
           select: {
             bookings: true,
             reviews: true,
+            accounts: true,
+            sessions: true,
           },
         },
       },
     });
 
-    if (user && user._count.bookings === 0 && user._count.reviews === 0) {
+    if (
+      user &&
+      user._count.bookings === 0 &&
+      user._count.reviews === 0 &&
+      user._count.accounts === 0 &&
+      user._count.sessions === 0
+    ) {
       await tx.user.delete({
         where: {
           id: user.id,

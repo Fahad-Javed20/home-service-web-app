@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { FaBolt, FaBroom, FaTruck, FaWrench } from "react-icons/fa";
 import { GiPaintRoller, GiWarpPipe } from "react-icons/gi";
 import Link from "next/link";
-import type { HeroCategory } from "@/lib/data/home";
+import type { HeroCategory } from "@/backend/queries/home";
 
 type HeroSectionProps = {
   categories: HeroCategory[];

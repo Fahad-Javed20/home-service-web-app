@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Briefcase, MapPin, ShieldCheck, Star } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getServiceProviderById } from "@/lib/data/providers";
+import { getServiceProviderById } from "@/backend/queries/providers";
 import BookingPanel from "./BookingPanel";
 
 type ServiceDetailPageProps = {

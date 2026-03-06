@@ -6,8 +6,8 @@ import {
   createService,
   deleteService,
   updateService,
-} from "@/lib/services/service-admin";
-import { requireAdminUser } from "@/lib/server/auth";
+} from "@/backend/services/service-admin";
+import { requireAdminUser } from "@/backend/auth/session";
 
 function readRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);

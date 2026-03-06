@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { requireAdminUser } from "@/lib/server/auth";
+import { requireAdminUser } from "@/backend/auth/session";
 import AdminSidebar from "./_components/AdminSidebar";
 
 type AdminLayoutProps = {

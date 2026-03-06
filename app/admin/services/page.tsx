@@ -11,11 +11,11 @@ import {
   createServiceAction,
   deleteServiceAction,
   updateServiceAction,
-} from "./actions";
+} from "@/backend/actions/admin-services";
 import {
   listServiceCategories,
   listServicesForAdmin,
-} from "@/lib/services/service-admin";
+} from "@/backend/services/service-admin";
 
 type AdminServicesPageProps = {
   searchParams: Promise<{

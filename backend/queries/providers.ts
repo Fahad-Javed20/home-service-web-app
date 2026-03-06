@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import { ProviderApprovalStatus } from "@prisma/client";
+import { prisma } from "@/backend/db/prisma";
 
 export type ServiceProviderCard = {
   id: string;
@@ -74,6 +75,16 @@ const categoryGalleryMap: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1200&h=800&fit=crop",
     "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&h=800&fit=crop",
   ],
+  appliance: [
+    "https://images.unsplash.com/photo-1581578017093-cd30fce4eeb7?w=1200&h=800&fit=crop",
+    "https://images.unsplash.com/photo-1582711012124-a56cf5a67c54?w=1200&h=800&fit=crop",
+    "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&fit=crop",
+  ],
+  moving: [
+    "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=1200&h=800&fit=crop",
+    "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=800&fit=crop",
+    "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=1200&h=800&fit=crop",
+  ],
 };
 
 function getGalleryImages(categoryName: string, primaryImage: string | null) {
@@ -89,22 +100,60 @@ function getGalleryImages(categoryName: string, primaryImage: string | null) {
 type GetServiceProvidersOptions = {
   limit?: number;
   categoryId?: string;
+  query?: string;
 };
 
 export async function getServiceProviders(
   options: GetServiceProvidersOptions = {}
 ): Promise<ServiceProviderCard[]> {
-  const { limit, categoryId } = options;
+  const { limit, categoryId, query } = options;
+  const normalizedQuery = query?.trim();
 
   try {
     const providers = await prisma.serviceProvider.findMany({
       where: {
-        verified: true,
-        ...(categoryId
+        approvalStatus: ProviderApprovalStatus.APPROVED,
+        providerServices: categoryId
           ? {
-              service: {
-                categoryId,
+              some: {
+                service: {
+                  categoryId,
+                },
               },
+            }
+          : {
+              some: {},
+            },
+        ...(normalizedQuery
+          ? {
+              OR: [
+                {
+                  user: {
+                    name: {
+                      contains: normalizedQuery,
+                      mode: "insensitive",
+                    },
+                  },
+                },
+                {
+                  city: {
+                    contains: normalizedQuery,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  providerServices: {
+                    some: {
+                      service: {
+                        name: {
+                          contains: normalizedQuery,
+                          mode: "insensitive",
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
             }
           : {}),
       },
@@ -121,15 +170,21 @@ export async function getServiceProviders(
             profileImage: true,
           },
         },
-        service: {
-          select: {
-            name: true,
-            description: true,
-            basePrice: true,
-            category: {
+        providerServices: {
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+          take: 1,
+          include: {
+            service: {
               select: {
-                id: true,
                 name: true,
+                description: true,
+                basePrice: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
@@ -137,27 +192,36 @@ export async function getServiceProviders(
       },
     });
 
-    return providers.map((provider) => ({
-      id: provider.id,
-      providerName: provider.user.name,
-      serviceName: provider.service.name,
-      serviceDescription: provider.service.description,
-      basePrice: provider.service.basePrice,
-      categoryId: provider.service.category.id,
-      categoryName: provider.service.category.name,
-      imageUrl: provider.imageUrl ?? provider.user.profileImage ?? null,
-      rating: provider.rating,
-      totalReviews: provider.totalReviews,
-      yearsOfExperience: provider.yearsOfExperience,
-      location: formatLocation({
-        addressLine1: provider.addressLine1,
-        city: provider.city,
-        state: provider.state,
-        country: provider.country,
-      }),
-      city: provider.city,
-      state: provider.state,
-    }));
+    return providers
+      .map((provider) => {
+        const primaryService = provider.providerServices[0]?.service;
+        if (!primaryService) {
+          return null;
+        }
+
+        return {
+          id: provider.id,
+          providerName: provider.user.name,
+          serviceName: primaryService.name,
+          serviceDescription: primaryService.description,
+          basePrice: primaryService.basePrice,
+          categoryId: primaryService.category.id,
+          categoryName: primaryService.category.name,
+          imageUrl: provider.imageUrl ?? provider.user.profileImage ?? null,
+          rating: provider.rating,
+          totalReviews: provider.totalReviews,
+          yearsOfExperience: provider.yearsOfExperience,
+          location: formatLocation({
+            addressLine1: provider.addressLine1,
+            city: provider.city,
+            state: provider.state,
+            country: provider.country,
+          }),
+          city: provider.city,
+          state: provider.state,
+        };
+      })
+      .filter((provider): provider is ServiceProviderCard => Boolean(provider));
   } catch (error) {
     console.error("Failed to fetch service providers", error);
     return [];
@@ -171,7 +235,7 @@ export async function getServiceProviderById(
     const provider = await prisma.serviceProvider.findFirst({
       where: {
         id: providerId,
-        verified: true,
+        approvalStatus: ProviderApprovalStatus.APPROVED,
       },
       include: {
         user: {
@@ -180,15 +244,21 @@ export async function getServiceProviderById(
             profileImage: true,
           },
         },
-        service: {
-          select: {
-            name: true,
-            description: true,
-            basePrice: true,
-            category: {
+        providerServices: {
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+          take: 1,
+          include: {
+            service: {
               select: {
-                id: true,
                 name: true,
+                description: true,
+                basePrice: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
@@ -200,16 +270,21 @@ export async function getServiceProviderById(
       return null;
     }
 
+    const primaryService = provider.providerServices[0]?.service;
+    if (!primaryService) {
+      return null;
+    }
+
     const imageUrl = provider.imageUrl ?? provider.user.profileImage ?? null;
 
     return {
       id: provider.id,
       providerName: provider.user.name,
-      serviceName: provider.service.name,
-      serviceDescription: provider.service.description,
-      basePrice: provider.service.basePrice,
-      categoryId: provider.service.category.id,
-      categoryName: provider.service.category.name,
+      serviceName: primaryService.name,
+      serviceDescription: primaryService.description,
+      basePrice: primaryService.basePrice,
+      categoryId: primaryService.category.id,
+      categoryName: primaryService.category.name,
       imageUrl,
       rating: provider.rating,
       totalReviews: provider.totalReviews,
@@ -225,7 +300,7 @@ export async function getServiceProviderById(
       bio: provider.bio,
       addressLine1: provider.addressLine1,
       country: provider.country,
-      galleryImages: getGalleryImages(provider.service.category.name, imageUrl),
+      galleryImages: getGalleryImages(primaryService.category.name, imageUrl),
     };
   } catch (error) {
     console.error("Failed to fetch service provider detail", error);

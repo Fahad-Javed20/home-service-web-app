@@ -1,5 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import { getServiceProviders, type ServiceProviderCard } from "@/lib/data/providers";
+import { prisma } from "@/backend/db/prisma";
+import { getServiceProviders, type ServiceProviderCard } from "@/backend/queries/providers";
+import { BookingStatus, ProviderApprovalStatus } from "@prisma/client";
 
 export type HeroCategory = {
   id: string;
@@ -29,7 +30,7 @@ function formatCount(value: number) {
 
 export async function getHeroCategories(limit = 6): Promise<HeroCategory[]> {
   try {
-    return await prisma.category.findMany({
+    return await prisma.serviceCategory.findMany({
       take: limit,
       orderBy: {
         createdAt: "asc",
@@ -77,7 +78,7 @@ export async function getTestimonials(limit = 3): Promise<Testimonial[]> {
             profileImage: true,
           },
         },
-        serviceProvider: {
+        provider: {
           select: {
             city: true,
             state: true,
@@ -87,7 +88,7 @@ export async function getTestimonials(limit = 3): Promise<Testimonial[]> {
     });
 
     return reviews.map((review) => {
-      const location = [review.serviceProvider.city, review.serviceProvider.state]
+      const location = [review.provider.city, review.provider.state]
         .filter(Boolean)
         .join(", ");
 
@@ -112,17 +113,17 @@ export async function getStats(): Promise<HomeStats> {
       await Promise.all([
         prisma.booking.count({
           where: {
-            status: "COMPLETED",
+            status: BookingStatus.COMPLETED,
           },
         }),
         prisma.serviceProvider.count({
           where: {
-            verified: true,
+            approvalStatus: ProviderApprovalStatus.APPROVED,
           },
         }),
         prisma.serviceProvider.findMany({
           where: {
-            verified: true,
+            approvalStatus: ProviderApprovalStatus.APPROVED,
             city: {
               not: null,
             },

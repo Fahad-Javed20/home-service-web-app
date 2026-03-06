@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/server/auth";
-import { createBookingAction } from "./actions";
+import { getCurrentUser } from "@/backend/auth/session";
+import { createBookingAction } from "@/backend/actions/booking";
+import { BOOKING_TIME_SLOTS } from "@/backend/services/booking-service";
 
 type BookingPanelProps = {
   providerId: string;
@@ -81,18 +82,37 @@ export default async function BookingPanel({
           <input type="hidden" name="redirectPath" value={redirectPath} />
 
           <div>
-            <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700 mb-1.5">
               Select date
             </label>
             <input
-              id="scheduledDate"
-              name="scheduledDate"
+              id="bookingDate"
+              name="bookingDate"
               type="date"
               min={today}
               defaultValue={today}
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary"
               required
             />
+          </div>
+
+          <div>
+            <label htmlFor="timeSlot" className="block text-sm font-medium text-gray-700 mb-1.5">
+              Select time slot
+            </label>
+            <select
+              id="timeSlot"
+              name="timeSlot"
+              defaultValue={BOOKING_TIME_SLOTS[0]}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary"
+              required
+            >
+              {BOOKING_TIME_SLOTS.map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button

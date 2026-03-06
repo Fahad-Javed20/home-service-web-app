@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Quote, Star } from "lucide-react";
-import type { Testimonial } from "@/lib/data/home";
+import type { Testimonial } from "@/backend/queries/home";
 
 type TestimonialsProps = {
   testimonials: Testimonial[];
