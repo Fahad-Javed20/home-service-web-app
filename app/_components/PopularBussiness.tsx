@@ -8,11 +8,13 @@ type PopularBusinessProps = {
 };
 
 const categoryColorMap: Record<string, string> = {
-  cleaning: "bg-purple-100 text-purple-600",
-  repair: "bg-orange-100 text-orange-600",
+  cleaning: "bg-emerald-100 text-emerald-700",
   plumbing: "bg-cyan-100 text-cyan-700",
+  electrical: "bg-blue-100 text-blue-700",
   painting: "bg-amber-100 text-amber-700",
-  electric: "bg-blue-100 text-blue-700",
+  "appliance repair": "bg-orange-100 text-orange-700",
+  "appliance-repair": "bg-orange-100 text-orange-700",
+  moving: "bg-indigo-100 text-indigo-700",
 };
 
 const fallbackBackgrounds = [
@@ -33,7 +35,9 @@ function getCategoryStyles(categoryName: string) {
 export default function PopularBusiness({ providers }: PopularBusinessProps) {
   return (
     <section className="bg-white px-6 py-10 max-w-6xl mx-auto">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Popular Business</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-6">
+        Popular Providers Across All Services
+      </h2>
 
       {providers.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-500">

@@ -50,7 +50,60 @@ export async function getHeroCategories(limit = 6): Promise<HeroCategory[]> {
 export async function getPopularProviders(
   limit = 8
 ): Promise<ServiceProviderCard[]> {
-  return getServiceProviders({ limit });
+  const providers = await getServiceProviders({ perCategoryLimit: 8 });
+
+  if (providers.length <= limit) {
+    return providers;
+  }
+
+  const providersByCategory = new Map<string, ServiceProviderCard[]>();
+
+  for (const provider of providers) {
+    const existing = providersByCategory.get(provider.categoryId);
+    if (existing) {
+      existing.push(provider);
+    } else {
+      providersByCategory.set(provider.categoryId, [provider]);
+    }
+  }
+
+  // First pass ensures we show at least one provider from each available category.
+  const selected: ServiceProviderCard[] = [];
+  for (const categoryProviders of providersByCategory.values()) {
+    if (selected.length >= limit) {
+      break;
+    }
+
+    const candidate = categoryProviders.shift();
+    if (candidate) {
+      selected.push(candidate);
+    }
+  }
+
+  // Second pass fills remaining slots while keeping category distribution balanced.
+  while (selected.length < limit) {
+    let addedProvider = false;
+
+    for (const categoryProviders of providersByCategory.values()) {
+      if (selected.length >= limit) {
+        break;
+      }
+
+      const candidate = categoryProviders.shift();
+      if (!candidate) {
+        continue;
+      }
+
+      selected.push(candidate);
+      addedProvider = true;
+    }
+
+    if (!addedProvider) {
+      break;
+    }
+  }
+
+  return selected;
 }
 
 export async function getTestimonials(limit = 3): Promise<Testimonial[]> {

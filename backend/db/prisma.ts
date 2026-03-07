@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { normalizePostgresConnectionString } from "./connection-string";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -13,7 +14,7 @@ function createPrismaClient() {
   }
 
   const adapter = new PrismaPg({
-    connectionString,
+    connectionString: normalizePostgresConnectionString(connectionString),
   });
 
   return new PrismaClient({ adapter });

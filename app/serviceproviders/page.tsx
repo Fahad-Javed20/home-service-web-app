@@ -24,6 +24,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
   const providers = await getServiceProviders({
     categoryId: activeCategoryId,
     query,
+    perCategoryLimit: 8,
   });
 
   const activeCategoryName =

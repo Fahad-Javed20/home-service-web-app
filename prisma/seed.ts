@@ -8,6 +8,7 @@ import {
 } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { createPasswordHash } from "../backend/auth/security";
+import { normalizePostgresConnectionString } from "../backend/db/connection-string";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -15,7 +16,9 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
 
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({
+  connectionString: normalizePostgresConnectionString(connectionString),
+});
 const prisma = new PrismaClient({ adapter });
 
 const daySlots = ["09:00-11:00", "11:00-13:00", "14:00-16:00", "16:00-18:00"];
@@ -95,9 +98,9 @@ const categories = [
 const providerPlan = [
   { slug: "cleaning", city: "New York", state: "NY", count: 8 },
   { slug: "plumbing", city: "Dallas", state: "TX", count: 8 },
-  { slug: "electrical", city: "San Jose", state: "CA", count: 8 },
+  { slug: "electrical", city: "San Jose", state: "CA", count: 7 },
   { slug: "painting", city: "Phoenix", state: "AZ", count: 8 },
-  { slug: "appliance-repair", city: "Chicago", state: "IL", count: 8 },
+  { slug: "appliance-repair", city: "Chicago", state: "IL", count: 7 },
   { slug: "moving", city: "Seattle", state: "WA", count: 8 },
 ] as const;
 
@@ -167,12 +170,15 @@ const providerLastNames = [
   "Parker",
 ] as const;
 
-const providerPortraitUrls = [
+const customerPortraitUrls = [
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1546961329-78bef0414d7c?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=400&h=400&fit=crop&crop=face",
+] as const;
+
+const providerPortraitUrls = [
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&h=400&fit=crop&crop=face",
@@ -184,6 +190,11 @@ const providerPortraitUrls = [
   "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=400&h=400&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1502767089025-6572583495b0?w=400&h=400&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=400&h=400&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=400&h=400&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=400&h=400&fit=crop&crop=face",
 ] as const;
 
 const credentials = {
@@ -229,23 +240,42 @@ function getProviderPortrait(index: number) {
   return providerPortraitUrls[index % providerPortraitUrls.length];
 }
 
-function imageFromCategory(categorySlug: string) {
-  const imageMap: Record<string, string> = {
-    cleaning:
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&h=700&fit=crop",
-    plumbing:
-      "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=900&h=700&fit=crop",
-    electrical:
-      "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&h=700&fit=crop",
-    painting:
-      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=900&h=700&fit=crop",
-    "appliance-repair":
-      "https://images.unsplash.com/photo-1581578017093-cd30fce4eeb7?w=900&h=700&fit=crop",
-    moving:
-      "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=900&h=700&fit=crop",
+function imageFromCategory(categorySlug: string, uniqueSeed: number) {
+  const serviceImagesByCategory: Record<string, string[]> = {
+    cleaning: [
+      "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=800&fit=crop",
+    ],
+    plumbing: [
+      "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1603712725038-e9334ae8f39f?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=1200&h=800&fit=crop",
+    ],
+    electrical: [
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=1200&h=800&fit=crop",
+    ],
+    painting: [
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=1200&h=800&fit=crop",
+    ],
+    "appliance-repair": [
+      "https://images.unsplash.com/photo-1581578017093-cd30fce4eeb7?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&fit=crop",
+    ],
+    moving: [
+      "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=1200&h=800&fit=crop",
+    ],
   };
 
-  return imageMap[categorySlug] ?? imageMap.cleaning;
+  const images = serviceImagesByCategory[categorySlug] ?? serviceImagesByCategory.cleaning;
+  return images[uniqueSeed % images.length];
 }
 
 async function resetDatabase() {
@@ -337,7 +367,7 @@ async function seedCustomers() {
           name: user.name,
           email: user.email,
           phone: user.phone,
-          profileImage: `https://i.pravatar.cc/400?img=${30 + index}`,
+          profileImage: customerPortraitUrls[index % customerPortraitUrls.length],
           role: UserRole.USER,
           passwordHash,
           isActive: true,
@@ -394,9 +424,9 @@ async function seedProviders(serviceBySlug: Map<string, { id: string; categorySl
         data: {
           userId: user.id,
           businessName: `${displayName} Home Services`,
-          bio: `Reliable ${plan.slug.replace("-", " ")} specialist for residential needs.`,
-          imageUrl: imageFromCategory(plan.slug),
-          addressLine1: `${100 + providerCounter} Service Avenue`,
+          bio: `Experienced ${plan.slug.replace("-", " ")} specialist serving households and apartments across ${plan.city}.`,
+          imageUrl: imageFromCategory(plan.slug, providerCounter),
+          addressLine1: `${100 + providerCounter}, Street ${index + 1}`,
           city: plan.city,
           state: plan.state,
           country: "USA",
@@ -595,3 +625,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
