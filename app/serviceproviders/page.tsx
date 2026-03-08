@@ -112,13 +112,13 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
               No verified providers available in this category yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {providers.map((provider) => (
                 <article
                   key={provider.id}
-                  className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+                  className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md"
                 >
-                  <div className="relative h-48 bg-purple-50">
+                  <div className="relative h-40 shrink-0 bg-slate-100">
                     <Image
                       src={provider.imageUrl ?? "/file.svg"}
                       alt={provider.providerName}
@@ -126,23 +126,28 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                       sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                       className="object-cover"
                     />
-                    <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 text-gray-700 text-xs px-2.5 py-1 border border-gray-200">
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white/95 px-2.5 py-1 text-xs text-gray-700 shadow-sm">
                       <ShieldCheck size={12} className="text-emerald-500" />
                       Verified
                     </span>
                   </div>
 
-                  <div className="p-4">
-                    <h2 className="text-lg font-bold text-gray-900">{provider.providerName}</h2>
+                  <div className="flex flex-1 flex-col p-3.5">
+                    <h2 className="min-h-6 truncate text-lg font-bold leading-tight text-gray-900">
+                      {provider.providerName}
+                    </h2>
 
-                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-600">
-                      <Briefcase size={14} className="text-primary" />
-                      <span>{provider.serviceName}</span>
-                      <span className="text-gray-300">|</span>
-                      <span>{provider.categoryName}</span>
+                    <div className="mt-1 grid min-h-11 grid-cols-[14px_1fr] gap-2 text-sm text-gray-600">
+                      <Briefcase size={14} className="mt-1 text-primary" />
+                      <div className="min-w-0">
+                        <p className="max-h-10 overflow-hidden text-[15px] leading-5 text-gray-700">
+                          {provider.serviceName}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-gray-500">{provider.categoryName}</p>
+                      </div>
                     </div>
 
-                    <div className="mt-3 flex items-center gap-1 text-sm text-gray-600">
+                    <div className="mt-2.5 flex items-center gap-1 text-sm text-gray-600">
                       <Star size={14} className="text-yellow-500 fill-yellow-500" />
                       <span className="font-semibold">{provider.rating.toFixed(1)}</span>
                       <span className="text-gray-400">
@@ -150,12 +155,12 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                       </span>
                     </div>
 
-                    <div className="mt-2 flex items-start gap-2 text-sm text-gray-500">
+                    <div className="mt-1.5 flex min-h-9 items-start gap-2 text-sm text-gray-500">
                       <MapPin size={14} className="mt-0.5 shrink-0" />
-                      <p>{provider.location}</p>
+                      <p className="max-h-10 overflow-hidden leading-5">{provider.location}</p>
                     </div>
 
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-1.5 min-h-5 text-sm text-gray-500">
                       {provider.yearsOfExperience
                         ? `${provider.yearsOfExperience}+ years of experience`
                         : "Experience details coming soon"}
@@ -163,7 +168,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
 
                     <BookNowButton
                       providerId={provider.id}
-                      className="mt-4 w-full rounded-lg bg-primary text-white text-sm font-semibold py-2.5 hover:bg-purple-600 transition-colors"
+                      className="mt-3 w-full rounded-lg bg-primary py-2 text-sm font-semibold text-white transition-colors hover:bg-purple-600"
                     />
                   </div>
                 </article>

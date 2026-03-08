@@ -173,6 +173,23 @@ export async function createBookingForUser(input: {
     };
   }
 
+  const user = await prisma.user.findUnique({
+    where: {
+      id: input.userId,
+    },
+    select: {
+      id: true,
+      isActive: true,
+    },
+  });
+
+  if (!user?.isActive) {
+    return {
+      ok: false,
+      error: "Your session is no longer valid. Please sign in again.",
+    };
+  }
+
   const provider = await prisma.serviceProvider.findUnique({
     where: {
       id: input.providerId,

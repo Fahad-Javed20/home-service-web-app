@@ -2,6 +2,7 @@ import { UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { normalizeRedirectPath } from "@/backend/auth/role-routes";
+import { prisma } from "@/backend/db/prisma";
 
 export type CurrentUser = {
   id: string;
@@ -26,16 +27,34 @@ function authPath(redirectPath: string, error?: string) {
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const session = await auth();
 
-  if (!session?.user?.id || !session.user.email || !session.user.name) {
+  if (!session?.user?.id) {
+    return null;
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      profileImage: true,
+      isActive: true,
+    },
+  });
+
+  if (!dbUser || !dbUser.isActive) {
     return null;
   }
 
   return {
-    id: session.user.id,
-    email: session.user.email,
-    name: session.user.name,
-    role: session.user.role ?? UserRole.USER,
-    profileImage: session.user.image ?? null,
+    id: dbUser.id,
+    email: dbUser.email,
+    name: dbUser.name,
+    role: dbUser.role ?? UserRole.USER,
+    profileImage: dbUser.profileImage ?? null,
   };
 }
 
