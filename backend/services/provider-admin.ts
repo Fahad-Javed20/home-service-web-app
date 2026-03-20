@@ -483,8 +483,6 @@ export async function deleteProvider(providerId: string): Promise<ProviderMutati
           select: {
             bookings: true,
             reviews: true,
-            accounts: true,
-            sessions: true,
           },
         },
       },
@@ -493,9 +491,7 @@ export async function deleteProvider(providerId: string): Promise<ProviderMutati
     if (
       user &&
       user._count.bookings === 0 &&
-      user._count.reviews === 0 &&
-      user._count.accounts === 0 &&
-      user._count.sessions === 0
+      user._count.reviews === 0
     ) {
       await tx.user.delete({
         where: {

@@ -284,12 +284,8 @@ async function resetDatabase() {
   await prisma.availabilitySlot.deleteMany();
   await prisma.providerService.deleteMany();
   await prisma.serviceProvider.deleteMany();
-  await prisma.admin.deleteMany();
   await prisma.service.deleteMany();
   await prisma.serviceCategory.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.verificationToken.deleteMany();
   await prisma.user.deleteMany();
 }
 
@@ -339,20 +335,13 @@ async function seedCoreData() {
 }
 
 async function seedAdmin() {
-  const adminUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: "Fahad Bin Javed",
       email: credentials.admin.email,
       role: UserRole.ADMIN,
       passwordHash: createPasswordHash(credentials.admin.password),
       isActive: true,
-    },
-  });
-
-  await prisma.admin.create({
-    data: {
-      userId: adminUser.id,
-      permissions: "full_access",
     },
   });
 }

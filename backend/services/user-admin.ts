@@ -66,11 +66,7 @@ export async function updateUserForAdmin(input: {
     },
     select: {
       id: true,
-      adminProfile: {
-        select: {
-          id: true,
-        },
-      },
+      role: true,
       providerProfile: {
         select: {
           id: true,
@@ -86,7 +82,7 @@ export async function updateUserForAdmin(input: {
     };
   }
 
-  if (user.adminProfile && input.role !== UserRole.ADMIN) {
+  if (user.role === UserRole.ADMIN && input.role !== UserRole.ADMIN) {
     return {
       ok: false,
       error: "Admin users must keep admin role.",
@@ -109,23 +105,6 @@ export async function updateUserForAdmin(input: {
         data: {
           userId,
           approvalStatus: "PENDING",
-        },
-      });
-    }
-
-    if (input.role !== UserRole.ADMIN && user.adminProfile) {
-      await tx.admin.delete({
-        where: {
-          userId,
-        },
-      });
-    }
-
-    if (input.role === UserRole.ADMIN && !user.adminProfile) {
-      await tx.admin.create({
-        data: {
-          userId,
-          permissions: "full_access",
         },
       });
     }
@@ -154,8 +133,6 @@ export async function deleteUserForAdmin(userIdInput: string): Promise<UserMutat
         select: {
           bookings: true,
           reviews: true,
-          accounts: true,
-          sessions: true,
         },
       },
       providerProfile: {
@@ -220,18 +197,6 @@ export async function deleteUserForAdmin(userIdInput: string): Promise<UserMutat
         },
       });
     }
-
-    await tx.account.deleteMany({
-      where: {
-        userId,
-      },
-    });
-
-    await tx.session.deleteMany({
-      where: {
-        userId,
-      },
-    });
 
     await tx.user.delete({
       where: {
